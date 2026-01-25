@@ -1,11 +1,11 @@
 [project]
-name = "placeholder_project_name"
+name = "lab-manager"
 version = "0.0.1"
-description = "Your project description here"
+description = "Tools to manage and track wet lab experiments"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Jack Hirst", email = "you@example.com" }]
 dependencies = [
   # dependencies go here
 ]
