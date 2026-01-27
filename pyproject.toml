@@ -8,6 +8,7 @@ license = { file = "LICENSE" }
 authors = [{ name = "Jack Hirst", email = "you@example.com" }]
 dependencies = [
   # dependencies go here
+  "numpy"
 ]
 
 [dependency-groups]
