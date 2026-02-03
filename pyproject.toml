@@ -61,5 +61,3 @@ exclude = [
   "README.md",
   # add other files or directories to exclude from linting here
 ]
-
-
