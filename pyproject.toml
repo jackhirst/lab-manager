@@ -16,6 +16,7 @@ dev = [
   "black",
   "build",
   "coverage",
+  "datetime",
   "isort",
   "mypy",
   "pydantic[mypy]",
@@ -24,7 +25,7 @@ dev = [
   "pytest-pretty",
   "ruff",
   "tombi",
-  "uv",
+  "uv"
 ]
 
 [build-system]
