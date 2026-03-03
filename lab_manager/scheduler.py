@@ -20,8 +20,8 @@ def initialise_schedule(input_schedule: list[dict], start_date: dt.date) -> list
 def alter_existing_schedule(existing_schedule: list[dict], index: int, new_date: str) -> list[dict]:
     # change the schedule at index and update downstream requirements
     first_part = existing_schedule[0:index]
-    second_part = existing_schedule[index:]
     # get gaps and flags for next parts. basically going to treat this like its own separate schedule
+    second_part = existing_schedule[index:]
     dates = [x["task_date"] for x in second_part]
     wait_times = [dates[i + 1] - dates[i] for i in range(len(dates) - 1)] #convert dates back into wait times
     new_schedule = []
@@ -98,6 +98,7 @@ def trigger_schedule_alteration(widget: LabelledEntry, input_schedule: list) -> 
     input_schedule.clear()
     input_schedule.extend(updated_schedule)
     #print(input_schedule)
+    #add some kind of callback here to alter the schedule alterer
     return None
 
 def gui_alter_existing_schedule(existing_schedule: list[dict], callback: callable = None) -> None:
@@ -121,7 +122,7 @@ def gui_alter_existing_schedule(existing_schedule: list[dict], callback: callabl
             label = tk.Label(schedule_alterer, text=f"{s['task_name']}\n{str(s['task_date'].date())}")
             label.pack()
         counter += 1
-    exit = tk.Button(schedule_alterer, text="Finish", command=lambda: [schedule_alterer.destroy(), callback() if callback else None])
+    exit = tk.Button(schedule_alterer, text="Finish", command = callback() if callback else None)
     exit.pack()
     return None
 
@@ -140,6 +141,7 @@ if __name__ == "__main__":
     ]
     test_schedule = initialise_schedule(test_schedule, dt.datetime.fromisoformat("2026-01-01"))
     print(test_schedule)
+    print("")
     display_schedule(test_schedule)
     #gui_alter_existing_schedule(test_schedule)
     root.mainloop()
