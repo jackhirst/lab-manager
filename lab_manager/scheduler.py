@@ -1,6 +1,8 @@
 import datetime as dt
 import tkinter as tk
 import typing
+from functools import partial
+
 
 def initialise_schedule(input_schedule: list[dict], start_date: dt.date) -> list[dict]:
     """
@@ -31,16 +33,21 @@ def initialise_schedule(input_schedule: list[dict], start_date: dt.date) -> list
     final_schedule: list[dict] = []
     for i in range(len(input_schedule)):
         if i == 0:  # treat first task separately
-            final_schedule.append({"task_name": input_schedule[i]["task_name"], 
-                                   "task_date": start_date, 
-                                   "category": "soft"})
+            final_schedule.append(
+                {"task_name": input_schedule[i]["task_name"], "task_date": start_date, "category": "soft"}
+            )
         else:
-            previous_date = final_schedule[i-1]["task_date"]
+            previous_date = final_schedule[i - 1]["task_date"]
             new_date = previous_date + dt.timedelta(hours=input_schedule[i]["wait_time"])
-            final_schedule.append({"task_name": input_schedule[i]["task_name"],
-                                   "task_date": new_date,
-                                   "category": input_schedule[i]["category"]})
+            final_schedule.append(
+                {
+                    "task_name": input_schedule[i]["task_name"],
+                    "task_date": new_date,
+                    "category": input_schedule[i]["category"],
+                }
+            )
     return final_schedule
+
 
 def alter_existing_schedule(existing_schedule: list[dict], index: int, new_date: str) -> list[dict]:
     """
@@ -71,21 +78,30 @@ def alter_existing_schedule(existing_schedule: list[dict], index: int, new_date:
     # get gaps and flags for next parts. basically going to treat this like its own separate schedule
     second_part: list[dict] = existing_schedule[index:]
     dates = [x["task_date"] for x in second_part]
-    wait_times = [dates[i + 1] - dates[i] for i in range(len(dates) - 1)] #convert dates back into wait times
+    wait_times = [dates[i + 1] - dates[i] for i in range(len(dates) - 1)]  # convert dates back into wait times
     new_schedule = []
     for i in range(len(second_part)):
-        if i == 0: #this is the task that's specifically being altered
-            new_schedule.append({"task_name": second_part[i]["task_name"],
-                                 "task_date": dt.datetime.fromisoformat(new_date),
-                                 "category": second_part[i]["category"]})
+        if i == 0:  # this is the task that's specifically being altered
+            new_schedule.append(
+                {
+                    "task_name": second_part[i]["task_name"],
+                    "task_date": dt.datetime.fromisoformat(new_date),
+                    "category": second_part[i]["category"],
+                }
+            )
         else:
             previous_date = new_schedule[i - 1]["task_date"]
             updated_date = previous_date + wait_times[i - 1]
-            new_schedule.append({"task_name": second_part[i]["task_name"],
-                                 "task_date": updated_date,
-                                 "category": second_part[i]["category"]})
+            new_schedule.append(
+                {
+                    "task_name": second_part[i]["task_name"],
+                    "task_date": updated_date,
+                    "category": second_part[i]["category"],
+                }
+            )
     new_schedule = first_part + new_schedule
     return new_schedule
+
 
 def display_schedule(existing_schedule: list[dict]) -> None:
     """
@@ -107,7 +123,8 @@ def display_schedule(existing_schedule: list[dict]) -> None:
     """
     view_schedule = tk.Toplevel()
     view_schedule.title("Schedule")
-    def refresh_view_schedule():
+
+    def refresh_view_schedule() -> None:
         # Clear all widgets in the window
         for widget in view_schedule.winfo_children():
             widget.destroy()
@@ -119,10 +136,14 @@ def display_schedule(existing_schedule: list[dict]) -> None:
         update_button = tk.Button(
             view_schedule,
             text="Update",
-            command=lambda: gui_alter_existing_schedule(existing_schedule, refresh_view_schedule) #refresh being passed as an argument to the subfunction, not called directly
+            command=lambda: gui_alter_existing_schedule(
+                existing_schedule, refresh_view_schedule
+            ),  # refresh being passed as an argument to the subfunction, not called directly
         )
         update_button.pack()
+
     refresh_view_schedule()
+
 
 class LabelledEntry(tk.Frame):
     """
@@ -152,6 +173,7 @@ class LabelledEntry(tk.Frame):
         button2 (tk.Button): Second action button.
         button3 (tk.Button): Third action button.
     """
+
     def __init__(
         self,
         parent: tk.Misc,
@@ -183,7 +205,8 @@ class LabelledEntry(tk.Frame):
     def get_entry(self) -> tuple[int, str]:
         return self.index, self.entry.get()
 
-def gui_alter_existing_schedule(existing_schedule: list[dict], callback) -> None: #) -> None:
+
+def gui_alter_existing_schedule(existing_schedule: list[dict], callback: typing.Callable) -> None:
     """
     Open a Tkinter window to modify the dates of soft tasks in a schedule.
 
@@ -207,12 +230,13 @@ def gui_alter_existing_schedule(existing_schedule: list[dict], callback) -> None
     """
     schedule_alterer = tk.Toplevel()
     schedule_alterer.title("schedule alterer")
+
     def refresh_alterer() -> None:
         counter = 0
-        #clear the window
+        # clear the window
         for widget in schedule_alterer.winfo_children():
             widget.destroy()
-        #recreate the window
+        # recreate the window
         for s in existing_schedule:
             if s["category"] == "soft":
                 widget = LabelledEntry(
@@ -224,17 +248,44 @@ def gui_alter_existing_schedule(existing_schedule: list[dict], callback) -> None
                     button_text3="Remove",
                     index=counter,
                 )
-            widget.button2.config(command=lambda w=widget: (trigger_schedule_alteration(w, existing_schedule), refresh_alterer())) #update schedule with new date
-            widget.pack()
+                #Add button - under construction
+                #TODO make this work
+                def handle_add(existing_schedule: list[dict], counter)-> None:
+                    new_task = gui_add_task()
+                    print(existing_schedule)
+                    existing_schedule.insert(counter, new_task)
+                    print(existing_schedule)
+
+                    return None
+
+                widget.button1.config(command = handle_add)
+                #Update button
+                def handle_update(w: LabelledEntry) -> None:
+                    trigger_schedule_alteration(w, existing_schedule)
+                    refresh_alterer()
+                    return None
+
+                widget.button2.config(command=partial(handle_update, widget))
+                widget.pack()
             if s["category"] == "hard":
                 label = tk.Label(schedule_alterer, text=f"{s['task_name']}\n{str(s['task_date'].date())}")
                 label.pack()
+                add_button = tk.Button(schedule_alterer, text = "Add", command=gui_add_task)
+                add_button.pack()
             counter += 1
-        exit = tk.Button(schedule_alterer, text="Finish", command = lambda: (callback(), schedule_alterer.destroy()))
+
+        def handle_exit() -> None:
+            callback()
+            schedule_alterer.destroy()
+            return None
+
+        exit = tk.Button(schedule_alterer, text="Finish", command=lambda: handle_exit())
         exit.pack()
         schedule_alterer.grab_set()
+
     refresh_alterer()
     return None
+
 
 def trigger_schedule_alteration(widget: LabelledEntry, input_schedule: list) -> None:
     """
@@ -256,17 +307,11 @@ def trigger_schedule_alteration(widget: LabelledEntry, input_schedule: list) -> 
     """
     index, new_date = widget.get_entry()
     updated_schedule: list[dict] = alter_existing_schedule(input_schedule, index, new_date)
-    #update schedule in place
+    # update schedule in place
     input_schedule.clear()
     input_schedule.extend(updated_schedule)
     return None
 
-def insert_into_schedule(existing_schedule: list[dict], index: int, new_task: dict) -> list[dict]:
-    #add a new task into an existing schedule at a specified index
-    return None
-
-def remove_from_schedule():
-    return None
 
 def gui_add_task() -> dict:
     """
@@ -304,8 +349,9 @@ def gui_add_task() -> dict:
 
     task_result: dict = {}
 
-    def submit_task():
+    def submit_task() -> None:
         from datetime import datetime
+
         task_result["task_name"] = name_entry.get()
         task_result["task_date"] = datetime.fromisoformat(date_entry.get())
         task_result["category"] = category_var.get()
@@ -318,13 +364,15 @@ def gui_add_task() -> dict:
     new_task_window.grab_set()
     new_task_window.wait_window()
 
+    print(task_result)
     return task_result
+
 
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Main")
 
-    test_schedule = [
+    test_schedule: list[dict] = [
         {"task_name": "transfection"},
         {"task_name": "media_change", "category": "hard", "wait_time": 24},
         {"task_name": "d3_harvest", "category": "soft", "wait_time": 48},
@@ -335,7 +383,6 @@ if __name__ == "__main__":
     ]
     test_schedule = initialise_schedule(test_schedule, dt.datetime.fromisoformat("2026-01-01"))
     display_schedule(test_schedule)
-    #gui_add_task()
     root.mainloop()
 
     print("yay")
