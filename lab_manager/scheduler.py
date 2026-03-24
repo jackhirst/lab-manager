@@ -324,8 +324,5 @@ if __name__ == "__main__":
     test2.initialise_schedule(test_schedule, dt.datetime.fromisoformat("2026-02-01"))
     manager = ScheduleManager ([test1, test2])
     
-    #test.alter_schedule(3, "2026-02-01")
-    #test.display_schedule()
-    #test.gui_alter_schedule()
     root.mainloop()
     print("yay")
